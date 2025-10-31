@@ -2,8 +2,6 @@ import Admin from "../models/Admin.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-
-
 export const register = async (req, res) => {
   try {
     // get the data from the req body
@@ -32,12 +30,22 @@ export const register = async (req, res) => {
         message: "user already exists!",
       });
     }
+
     // store the data in DB
     const user = await Admin.create({
       email,
       passwordHash: hashPassword,
       name,
     });
+
+    if(!user) {
+      return res.status(400).json({
+        message :"Something went wrong while creating the user!",
+        data : null
+      })
+    }
+
+
     // generate the JSON web token
     const token = jwt.sign(
       {
@@ -50,6 +58,14 @@ export const register = async (req, res) => {
         expiresIn: "1h",
       }
     );
+
+    if (!token) {
+      return res.status(400).json({
+        message: "Something went wrong while generating token",
+        data: null,
+      });
+    }
+
     // return the JSON web token and users details
     return res.status(201).json({
       message: "Registered successfully!",
@@ -58,8 +74,10 @@ export const register = async (req, res) => {
           id: user._id,
           email: user.email,
           name: user.name,
-          token,
         },
+        JSONWebToken : {
+          token
+        }
       },
     });
   } catch (error) {
@@ -72,7 +90,8 @@ export const register = async (req, res) => {
 };
 
 export const login = async (req, res) => {
-  console.log(req.body)
+  
+
   try {
     // check the user input
     const { email, password } = req.body;
@@ -136,3 +155,21 @@ export const login = async (req, res) => {
     });
   }
 };
+
+
+export const protectedRouteController = async (req , res) => {
+  try {
+    console.log(req.user)
+    return res.status(200).json({
+      message : "This is protected route by jsonwebtoken",
+      data : {
+        uWu : "aaiyaan!"
+      }
+    })
+  } catch (error) {
+      return res.status(500).json({
+        message: "Something went wrong!",
+        data : null
+      })
+  }
+}
