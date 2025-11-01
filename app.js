@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 8000;
 const app = express();
 
 app.use(cors());
-
+  
 // Only parse JSON for non-file-upload routes
 app.use((req, res, next) => {
   // Skip JSON parsing for multipart/form-data (file uploads)
@@ -39,7 +39,7 @@ app.get("/", (_, res) => {
   })
 });
 
-// connectDB();
+connectDB();
 
 app.listen(PORT, () => {
   console.log(`Server running on this PORT: ${PORT}`);

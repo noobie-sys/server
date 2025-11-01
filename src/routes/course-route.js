@@ -31,6 +31,8 @@ const upload = multer({
   },
 });
 
+
+
 router.get("/", (req, res) => {
   return res.status(200).json({
     message: "End point is working!",
@@ -42,9 +44,9 @@ router.get("/", (req, res) => {
 
 // Add middleware to handle multer errors and log request
 router.post("/upload", (req, res, next) => {
-  console.log("Upload route hit");
-  console.log("Request headers:", req.headers);
-  console.log("Content-Type:", req.headers['content-type']);
+//   console.log("Upload route hit");
+//   console.log("Request headers:", req.headers);
+//   console.log("Content-Type:", req.headers['content-type']);
   
   upload.single('file')(req, res, (err) => {
     if (err) {
@@ -63,7 +65,8 @@ router.post("/upload", (req, res, next) => {
         message: err.message || "File upload error",
       });
     }
-    console.log("Multer processed successfully, req.file:", req.file);
+    // console.log("UPLOAD😭 : \n", upload)
+    // console.log("Multer processed successfully, req.file:", req.file);
     next();
   });
 }, uploadCourses);
