@@ -1,5 +1,6 @@
 import Course from "../models/Course.js";
 import { parseCSVBuffer } from "../utility/csv-parser.js";
+import { getFromCache, setCache, CACHE_EXPIRY } from "../utils/cache.js";
 
 // Helper function to get column value with multiple possible names (case-insensitive)
 const getColumnValue = (row, possibleNames) => {
@@ -195,3 +196,83 @@ export const uploadCourses = async (req, res) => {
     });
   }
 };
+
+// Example: Get course by ID with caching
+export const getCourseById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const cacheKey = `course:id:${id}`;
+
+    // Step 1: Try to get from cache first
+    const cachedCourse = await getFromCache(cacheKey);
+    
+    if (cachedCourse) {
+      return res.status(200).json({
+        message: "Course retrieved from cache",
+        data: cachedCourse,
+      });
+    }
+
+    // Step 2: If not in cache, fetch from MongoDB
+    const course = await Course.findOne({ course_id: id });
+    
+    if (!course) {
+      return res.status(404).json({
+        message: "Course not found",
+        data: null,
+      });
+    }
+
+    // Step 3: Store in cache for future requests
+    const courseObject = course.toObject();
+    await setCache(cacheKey, courseObject, CACHE_EXPIRY.COURSE_BY_ID);
+
+    return res.status(200).json({
+      message: "Course retrieved successfully",
+      data: courseObject,
+    });
+  } catch (error) {
+    console.error("Get course by ID error:", error);
+    return res.status(500).json({
+      message: "Something went wrong while fetching course",
+      error: error.message,
+    });
+  }
+};
+
+
+/**
+ * Get all courses with Redis caching
+ */
+export const getAllCourses = async (req, res) => {
+    try {
+      const cacheKey = `course:all`;
+  
+      // Step 1: Try to get from cache first
+      const cachedCourses = await getFromCache(cacheKey);
+      
+      if (cachedCourses) {
+        return res.status(200).json({
+          message: "Courses retrieved from cache",
+          data: cachedCourses,
+        });
+      }
+  
+      // Step 2: If not in cache, fetch from MongoDB
+      const courses = await Course.find().lean();
+  
+      // Step 3: Store in cache for future requests
+      await setCache(cacheKey, courses, CACHE_EXPIRY.ALL_COURSES);
+  
+      return res.status(200).json({
+        message: "Courses retrieved successfully",
+        data: courses,
+      });
+    } catch (error) {
+      console.error("Get all courses error:", error);
+      return res.status(500).json({
+        message: "Something went wrong while fetching courses",
+        error: error.message,
+      });
+    }
+  };

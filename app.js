@@ -6,6 +6,7 @@ import courseRoutes from './src/routes/course-route.js'
 
 import dotenv from "dotenv";
 import connectDB from "./src/config/db.js";
+import { connectRedis } from "./src/config/redis.js";
 
 dotenv.config();
 
@@ -39,6 +40,7 @@ app.get("/", (_, res) => {
   })
 });
 
+connectRedis()
 connectDB();
 
 app.listen(PORT, () => {
