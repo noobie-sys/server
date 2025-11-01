@@ -33,13 +33,13 @@ const upload = multer({
 
 
 // GET /api/courses - Get all courses (with Redis caching)
-router.get("/", getAllCourses);
+router.get("/", authenticateToken, getAllCourses);
 
 // GET /api/courses/:id - Get course by ID (with Redis caching)
-router.get("/:id", getCourseById);
+router.get("/:id", authenticateToken, getCourseById);
 
 // Add middleware to handle multer errors and log request
-router.post("/upload", (req, res, next) => {
+router.post("/upload", authenticateToken,(req, res, next) => {
   upload.single('file')(req, res, (err) => {
     if (err) {
       console.error("Multer error:", err);
