@@ -163,7 +163,7 @@ export const protectedRouteController = async (req , res) => {
     return res.status(200).json({
       message : "This is protected route by jsonwebtoken",
       data : {
-        uWu : "aaiyaan!"
+        name : "Aman Gupta"
       }
     })
   } catch (error) {
